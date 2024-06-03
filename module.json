@@ -1,0 +1,53 @@
+{
+  "id": "heroic-variant",
+  "title": "Heroic Variant",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "11",
+    "verified": "11"
+  },
+  "packs": [
+    {
+      "name": "heroic-variant-macros",
+      "label": "HV Macros",
+      "path": "packs/heroic-variant-macros",
+      "type": "Macro",
+      "system": "pf2e",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "hv-effects-and-abilities",
+      "label": "HV Effects and Abilities",
+      "path": "packs/hv-effects-and-abilities",
+      "type": "Item",
+      "system": "pf2e",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    }
+  ],
+  "packFolders": [
+    {
+      "name": "Heroic Variant",
+      "sorting": "a",
+      "packs": [
+        "hv-effects-and-abilities",
+        "heroic-variant-macros"
+      ],
+      "folders": []
+    }
+  ],
+  "esmodules": [
+    "hooks.js"
+  ],
+  "authors": [
+    {
+      "name": "Utkarsh G.",
+      "discord": "AvtrSpirit"
+    }
+  ]
+}
