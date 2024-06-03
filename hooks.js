@@ -1,37 +1,46 @@
 console.log(`***************************************\n\n
-CREATING HOOK LISTNER FOR UPDATE ITEM FOR HEROIC VARIANT\n\n
-
+CREATING HOOK LISTENERS FOR HEROIC VARIANT\n\n
 ************************************`)
 
-const hookindex = Hooks.on('updateItem', async (itemInfo) => {
+Hooks.on('preUpdateItem', async (itemInfo, change) => {
   // if wounded
-
   if (itemInfo._source.name === "Wounded"){
     if (! itemInfo.actor?.flags.heroicVariant?.previousWound){
       await itemInfo.actor.update({"flags.heroicVariant.previousWound": 0})
     }
 
-    if (itemInfo.actor.flags.heroicVariant.previousWound > itemInfo.system.value.value){
+    let incomingValue = change.system.value.value
 
-      // check here if we already maxed out and then increase the value right back or stop it somehow.
-      const macroId = await fromUuid("Compendium.heroic-variant.heroic-variant-macros.Macro.UGMhMZNNyn8RU5t3")
-      macroId.execute({"actorIn":itemInfo.actor})
+    if (itemInfo.actor.flags.heroicVariant.previousWound > incomingValue){
+      updateUnsettledInjuriesByOneOnSelectedActor(itemInfo.actor)
     }
-    // itemInfo.actor.flags.heroicVariant.previousWound = 
-    await itemInfo.actor.update({"flags.heroicVariant.previousWound": itemInfo.system.value.value})
+    updateActorsPreviousWound(itemInfo.actor, incomingValue)
   }
   
 });
 
-const hookindex2 = Hooks.on('deleteItem', async (itemInfo) => {
-
-  if (itemInfo._source.name === "Wounded"){
-    const macroId = await fromUuid("Compendium.heroic-variant.heroic-variant-macros.Macro.UGMhMZNNyn8RU5t3")
-    macroId.execute({"actorIn":itemInfo.actor})
-    
-    await itemInfo.actor.update({"flags.heroicVariant.previousWound": 0})
-  }
-  
+Hooks.on('preDeleteItem', async (itemInfo, options, userID) => {
+  if(options.hardResetHeroicVariant) return;
+  ifWoundedThenUpdate(itemInfo.actor, itemInfo._source.name, 0)
 });
 
-console.log("Hook created for update item for Heroic Variant")
+Hooks.on('preCreateItem', async (itemInfo) => {
+  if(itemInfo._source.name === "Wounded") updateActorsPreviousWound(itemInfo.actor, 1)
+});
+
+async function ifWoundedThenUpdate(actor, itemName, prevWoundedValue){
+  if (itemName === "Wounded"){
+    updateUnsettledInjuriesByOneOnSelectedActor(actor)
+    updateActorsPreviousWound(actor, prevWoundedValue)
+  }
+}
+
+async function updateUnsettledInjuriesByOneOnSelectedActor(actor){
+  const macroId = await fromUuid("Compendium.heroic-variant.heroic-variant-macros.Macro.UGMhMZNNyn8RU5t3")
+  macroId.execute({"actorIn":actor})
+}
+
+async function updateActorsPreviousWound(actor, value){
+  await actor.update({"flags.heroicVariant.previousWound": value})
+}
+
