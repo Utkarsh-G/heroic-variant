@@ -33,20 +33,48 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
         console.log(`Okay, button was clicked. in data:`)
         console.log(li)
         const message = game.messages.get(li[0].dataset.messageId, {strict: true});
-        
-        game.settings.set("xdy-pf2e-workbench", "keeleysHeroPointRule", true).then(_ => {
-          game.pf2e.Check.rerollFromMessage(message, {heroPoint: true});
-          const messageActor = message.actor;
-          const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
-          const newValue = actor.heroPoints.value - 2;
-          console.log(`New value of hero point should be: ${newValue}`)
-          actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
+
+        const tempHook = Hooks.on('pf2e.reroll', pf2eRerollHook)
+        console.log(`tempHook: ${tempHook}`)
+
+        game.pf2e.Check.rerollFromMessage(message, {heroPoint: true}).then(() => {
+          Hooks.off('pf2e.reroll', tempHook)
         })
+        const messageActor = message.actor;
+        const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
+        const newValue = actor.heroPoints.value - 2;
+        console.log(`New value of hero point should be: ${newValue}`)
+        actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
+
         
       },
     }
   )
   return buttons
+}
+
+function pf2eRerollHook(
+  _oldRoll,
+  newRoll,
+  heroPoint,
+  keep, // : "new" | "higher" | "lower",
+) {
+  if (!heroPoint || keep !== "new") return;
+
+  // @ts-ignore
+  const die = newRoll.dice.find((d) => d instanceof Die && d.number === 1 && d.faces === 20);
+  const result = die?.results.find((r) => r.active && r.result <= 10);
+  if (die && result) {
+      newRoll.terms.push(
+          // @ts-ignore
+          OperatorTerm.fromData({ class: "OperatorTerm", operator: "+", evaluated: true }),
+          // @ts-ignore
+          NumericTerm.fromData({ class: "NumericTerm", number: 10, evaluated: true }),
+      );
+      // @ts-ignore It's protected. Meh.
+      newRoll._total += 10;
+      newRoll.options.keeleyAdd10 = true;
+  }
 }
 
 Hooks.on('preUpdateItem', async (itemInfo, change) => {
