@@ -33,12 +33,16 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
         console.log(`Okay, button was clicked. in data:`)
         console.log(li)
         const message = game.messages.get(li[0].dataset.messageId, {strict: true});
-        game.pf2e.Check.rerollFromMessage(message, {heroPoint: true});
-        const messageActor = message.actor;
-        const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
-        const newValue = actor.heroPoints.value - 2;
-        console.log(`New value of hero point should be: ${newValue}`)
-        actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
+        
+        game.settings.set("xdy-pf2e-workbench", "keeleysHeroPointRule", true).then(_ => {
+          game.pf2e.Check.rerollFromMessage(message, {heroPoint: true});
+          const messageActor = message.actor;
+          const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
+          const newValue = actor.heroPoints.value - 2;
+          console.log(`New value of hero point should be: ${newValue}`)
+          actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
+        })
+        
       },
     }
   )
