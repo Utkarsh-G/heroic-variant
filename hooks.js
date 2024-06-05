@@ -1,7 +1,7 @@
 console.log(`***************************************\n\n
 CREATING HOOK LISTENERS FOR HEROIC VARIANT\n\n
 ************************************`)
-
+//import {CheckPF2e} from systems/pf2e/pf2e.mjs
 const MODULE_ID = 'pf2e-heroic-variant'
 
 Hooks.on('init', ()=>{
@@ -13,11 +13,11 @@ Hooks.on('init', ()=>{
   )
 })
 
-const canHeroPointReroll = ($li) => {
+const canKeelyHeroPointReroll = ($li) => {
             const message = game.messages.get($li[0].dataset.messageId, { strict: true });
             const messageActor = message.actor;
             const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
-            return message.isRerollable && !!actor?.isOfType("character") && actor.heroPoints.value > 0;
+            return message.isRerollable && !!actor?.isOfType("character") && actor.heroPoints.value > 1;
         };
 
 const _getEntryContextOptions_Wrapper = (wrapped) => {
@@ -27,11 +27,18 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
   buttons.unshift(
     {
       name: 'Reroll using Keely Hero Point Rule',
-      icon: fontAwesomeIcon("hospital-symbol").outerHTML,
-      condition: canHeroPointReroll,
+      icon: '<i class="fas fa-star"></i>',
+      condition: canKeelyHeroPointReroll,
       callback:  li => {
         console.log(`Okay, button was clicked. in data:`)
         console.log(li)
+        const message = game.messages.get(li[0].dataset.messageId, {strict: true});
+        game.pf2e.Check.rerollFromMessage(message, {heroPoint: true});
+        const messageActor = message.actor;
+        const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
+        const newValue = actor.heroPoints.value - 2;
+        console.log(`New value of hero point should be: ${newValue}`)
+        actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
       },
     }
   )
@@ -79,4 +86,3 @@ async function updateUnsettledInjuriesByOneOnSelectedActor(actor){
 async function updateActorsPreviousWound(actor, value){
   await actor.update({"flags.heroicVariant.previousWound": value})
 }
-
