@@ -13,6 +13,13 @@ Hooks.on('init', ()=>{
   )
 })
 
+const canHeroPointReroll = ($li) => {
+            const message = game.messages.get($li[0].dataset.messageId, { strict: true });
+            const messageActor = message.actor;
+            const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
+            return message.isRerollable && !!actor?.isOfType("character") && actor.heroPoints.value > 0;
+        };
+
 const _getEntryContextOptions_Wrapper = (wrapped) => {
   const buttons = wrapped.bind(this)()
 
@@ -20,10 +27,8 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
   buttons.unshift(
     {
       name: 'Reroll using Keely Hero Point Rule',
-      icon: '<i class="fas fa-star"></i>',
-      condition: _ => {
-        return true
-      },
+      icon: fontAwesomeIcon("hospital-symbol").outerHTML,
+      condition: canHeroPointReroll,
       callback:  li => {
         console.log(`Okay, button was clicked. in data:`)
         console.log(li)
