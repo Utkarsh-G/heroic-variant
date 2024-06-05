@@ -1,6 +1,6 @@
 {
-  "id": "heroic-variant",
-  "title": "Heroic Variant",
+  "id": "pf2e-heroic-variant",
+  "title": "PF2e Heroic Variant",
   "version": "1.0.0",
   "compatibility": {
     "minimum": "11",
@@ -49,5 +49,29 @@
       "name": "Utkarsh G.",
       "discord": "AvtrSpirit"
     }
-  ]
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "pf2e",
+        "type": "system",
+        "manifest": "https://github.com/foundryvtt/pf2e/releases/download/latest/system.json",
+        "compatibility": {
+          "minimum": "5.15.1",
+          "verified": "5.15.1"
+        }
+      }
+    ],
+    "requires": [
+      {
+        "id": "lib-wrapper",
+        "type": "module",
+        "manifest": "https://github.com/ruipin/fvtt-lib-wrapper/releases/latest/download/module.json",
+        "compatibility": {
+          "minimum": "1.12.13.0",
+          "verified": "1.12.13.0"
+        }
+      }
+    ]
+  }
 }

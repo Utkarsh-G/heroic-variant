@@ -2,6 +2,37 @@ console.log(`***************************************\n\n
 CREATING HOOK LISTENERS FOR HEROIC VARIANT\n\n
 ************************************`)
 
+const MODULE_ID = 'pf2e-heroic-variant'
+
+Hooks.on('init', ()=>{
+  libWrapper.register(
+    MODULE_ID,
+    'ChatLog.prototype._getEntryContextOptions',
+    _getEntryContextOptions_Wrapper,
+    'WRAPPER',
+  )
+})
+
+const _getEntryContextOptions_Wrapper = (wrapped) => {
+  const buttons = wrapped.bind(this)()
+
+  // Add a button
+  buttons.unshift(
+    {
+      name: 'Reroll using Keely Hero Point Rule',
+      icon: '<i class="fas fa-star"></i>',
+      condition: _ => {
+        return true
+      },
+      callback:  li => {
+        console.log(`Okay, button was clicked. in data:`)
+        console.log(li)
+      },
+    }
+  )
+  return buttons
+}
+
 Hooks.on('preUpdateItem', async (itemInfo, change) => {
   // if wounded
   if (itemInfo._source.name === "Wounded"){
@@ -36,7 +67,7 @@ async function ifWoundedThenUpdate(actor, itemName, prevWoundedValue){
 }
 
 async function updateUnsettledInjuriesByOneOnSelectedActor(actor){
-  const macroId = await fromUuid("Compendium.heroic-variant.heroic-variant-macros.Macro.UGMhMZNNyn8RU5t3")
+  const macroId = await fromUuid("Compendium.pf2e-heroic-variant.heroic-variant-macros.Macro.UGMhMZNNyn8RU5t3")
   macroId.execute({"actorIn":actor})
 }
 
