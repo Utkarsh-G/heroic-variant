@@ -1,16 +1,14 @@
-2024/06/05-11:18:10.498 3860 Recovering log #25
-2024/06/05-11:18:10.498 3860 Level-0 table #27: started
-2024/06/05-11:18:10.498 3860 Level-0 table #27: 5893 bytes OK
-2024/06/05-11:18:10.506 3860 Delete type=0 #25
-2024/06/05-11:18:10.506 3860 Delete type=3 #24
-2024/06/05-13:33:27.441 280 Level-0 table #30: started
-2024/06/05-13:33:27.441 280 Level-0 table #30: 0 bytes OK
-2024/06/05-13:33:27.442 280 Delete type=0 #28
-2024/06/05-13:33:27.443 280 Manual compaction at level-0 from '!macros!LnVFuK5WIZr7e71b' @ 72057594037927935 : 1 .. '!macros!UGMhMZNNyn8RU5t3' @ 0 : 0; will stop at '!macros!UGMhMZNNyn8RU5t3' @ 4 : 1
-2024/06/05-13:33:27.443 280 Compacting 1@0 + 1@1 files
-2024/06/05-13:33:27.445 280 Generated table #31@0: 2 keys, 2179 bytes
-2024/06/05-13:33:27.445 280 Compacted 1@0 + 1@1 files => 2179 bytes
-2024/06/05-13:33:27.446 280 compacted to: files[ 0 1 0 0 0 0 0 ]
-2024/06/05-13:33:27.447 280 Delete type=2 #13
-2024/06/05-13:33:27.447 280 Delete type=2 #27
-2024/06/05-13:33:27.452 280 Manual compaction at level-0 from '!macros!UGMhMZNNyn8RU5t3' @ 4 : 1 .. '!macros!UGMhMZNNyn8RU5t3' @ 0 : 0; will stop at (end)
+2024/06/05-16:32:59.252 430c Recovering log #36
+2024/06/05-16:32:59.259 430c Delete type=0 #36
+2024/06/05-16:32:59.260 430c Delete type=3 #34
+2024/06/05-20:08:36.014 410 Level-0 table #40: started
+2024/06/05-20:08:36.015 410 Level-0 table #40: 0 bytes OK
+2024/06/05-20:08:36.016 410 Delete type=0 #38
+2024/06/05-20:08:36.021 410 Manual compaction at level-0 from '!macros!LnVFuK5WIZr7e71b' @ 72057594037927935 : 1 .. '!macros!UGMhMZNNyn8RU5t3' @ 0 : 0; will stop at '!macros!UGMhMZNNyn8RU5t3' @ 15 : 1
+2024/06/05-20:08:36.021 410 Compacting 1@0 + 1@1 files
+2024/06/05-20:08:36.023 410 Generated table #41@0: 2 keys, 2112 bytes
+2024/06/05-20:08:36.023 410 Compacted 1@0 + 1@1 files => 2112 bytes
+2024/06/05-20:08:36.024 410 compacted to: files[ 0 1 0 0 0 0 0 ]
+2024/06/05-20:08:36.024 410 Delete type=2 #31
+2024/06/05-20:08:36.025 410 Delete type=2 #35
+2024/06/05-20:08:36.029 410 Manual compaction at level-0 from '!macros!UGMhMZNNyn8RU5t3' @ 15 : 1 .. '!macros!UGMhMZNNyn8RU5t3' @ 0 : 0; will stop at (end)

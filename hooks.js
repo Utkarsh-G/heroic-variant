@@ -49,6 +49,7 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
   return buttons
 }
 
+// Code copied from github.com/xdy/xdy-pf2e-workbench
 function pf2eRerollHook(
   _oldRoll,
   newRoll,
@@ -72,6 +73,48 @@ function pf2eRerollHook(
       newRoll.options.keeleyAdd10 = true;
   }
 }
+
+// Code modified from github.com/xdy/xdy-pf2e-workbench
+function renderChatMessageHook(message, jq) {
+  const html = jq.get(0);
+
+  const lastRoll = message.rolls.at(-1);
+  if (lastRoll?.options.keeleyAdd10) {
+    const element = jq.get(0);
+
+    if (element) {
+        const tags = element.querySelector(".flavor-text > .tags.modifiers");
+        const formulaElem = element.querySelector(".reroll-discard .dice-formula");
+        const newTotalElem = element.querySelector(".reroll-second .dice-total");
+        if (tags && formulaElem && newTotalElem) {
+            // Add a tag to the list of modifiers
+            const newTag = document.createElement("span");
+            newTag.classList.add("tag", "tag_transparent", "keeley-add-10");
+            newTag.innerText = 'Rolled Under 10 +10';
+            newTag.dataset.slug = "keeley-add-10";
+            newTag.style.color = "darkblue";
+            const querySelector = tags.querySelector(".tag");
+            if (querySelector?.dataset.visibility === "gm") {
+                newTag.dataset.visibility = "gm";
+            }
+            tags.append(newTag);
+
+            // Show +10 in the formula
+            const span = document.createElement("span");
+            span.className = "keeley-add-10";
+            span.innerText = " + 10";
+            formulaElem?.append(span);
+            formulaElem.style.color = "darkblue";
+
+            // Make the total purple
+            newTotalElem.classList.add("keeley-add-10");
+            newTotalElem.style.color = "darkblue";
+        }
+    }
+  }
+}
+
+Hooks.on('renderChatMessage', renderChatMessageHook);
 
 Hooks.on('preUpdateItem', async (itemInfo, change) => {
   // if wounded
