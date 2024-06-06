@@ -19,6 +19,13 @@ const canKeelyHeroPointReroll = ($li) => {
             return message.isRerollable && !!actor?.isOfType("character") && actor.heroPoints.value > 1;
         };
 
+const canMisfortuneReroll = ($li) => {
+  const message = game.messages.get($li[0].dataset.messageId, { strict: true });
+  const messageActor = message.actor;
+  if (!_token || !_token.actor || !_token.actor.heroPoints) return false;
+  return message.isRerollable && !messageActor?.isOfType("character") && _token.actor.heroPoints.value > 1;
+};
+
 const _getEntryContextOptions_Wrapper = (wrapped) => {
   const buttons = wrapped.bind(this)()
   const defaultHeroPointIndex = buttons.findIndex((button) => 
@@ -43,6 +50,20 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
         actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
 
         
+      },
+    },
+    {
+      name: 'Reroll with 2 Hero Points and Take Newer',
+      icon: '<i class="fas fa-star"></i>',
+      condition: canMisfortuneReroll,
+      callback:  li => {
+        if (!_token || !_token.actor || !_token.actor.heroPoints){console.log("no selected token"); return;}
+        if (_token.actor.heroPoints.value > 1) {
+          const message = game.messages.get(li[0].dataset.messageId, {strict: true});
+          game.pf2e.Check.rerollFromMessage(message, {heroPoint: false, keep: 'new'}).then(() => {})
+          const newValue = _token.actor.heroPoints.value - 2;
+          _token.actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
+        }
       },
     }
   )
@@ -73,6 +94,31 @@ function pf2eRerollHook(
       newRoll.options.keeleyAdd10 = true;
   }
 }
+
+// // Code modified from github.com/xdy/xdy-pf2e-workbench
+// function pf2eMonsterRerollHook(
+//   _oldRoll,
+//   newRoll,
+//   heroPoint,
+//   keep, // : "new" | "higher" | "lower",
+// ) {
+//   if (keep !== "new") return;
+
+//   // @ts-ignore
+//   const die = newRoll.dice.find((d) => d instanceof Die && d.number === 1 && d.faces === 20);
+//   const result = die?.results.find((r) => r.active && r.result <= 10);
+//   if (die && result) {
+//       newRoll.terms.push(
+//           // @ts-ignore
+//           OperatorTerm.fromData({ class: "OperatorTerm", operator: "+", evaluated: true }),
+//           // @ts-ignore
+//           NumericTerm.fromData({ class: "NumericTerm", number: 10, evaluated: true }),
+//       );
+//       // @ts-ignore It's protected. Meh.
+//       newRoll._total += 10;
+//       newRoll.options.keeleyAdd10 = true;
+//   }
+// }
 
 // Code modified from github.com/xdy/xdy-pf2e-workbench
 function renderChatMessageHook(message, jq) {
