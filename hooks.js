@@ -1,7 +1,6 @@
 console.log(`***************************************\n\n
 CREATING HOOK LISTENERS FOR HEROIC VARIANT\n\n
 ************************************`)
-//import {CheckPF2e} from systems/pf2e/pf2e.mjs
 const MODULE_ID = 'pf2e-heroic-variant'
 
 Hooks.on('init', ()=>{
@@ -22,20 +21,18 @@ const canKeelyHeroPointReroll = ($li) => {
 
 const _getEntryContextOptions_Wrapper = (wrapped) => {
   const buttons = wrapped.bind(this)()
-
+  const defaultHeroPointIndex = buttons.findIndex((button) => 
+  {return button.name === "PF2E.RerollMenu.HeroPoint";});
   // Add a button
-  buttons.unshift(
+  buttons.push(
     {
-      name: 'Reroll using Keely Hero Point Rule',
+      name: 'Reroll with 2 Hero Points (d10+10)',
       icon: '<i class="fas fa-star"></i>',
       condition: canKeelyHeroPointReroll,
       callback:  li => {
-        console.log(`Okay, button was clicked. in data:`)
-        console.log(li)
         const message = game.messages.get(li[0].dataset.messageId, {strict: true});
 
-        const tempHook = Hooks.on('pf2e.reroll', pf2eRerollHook)
-        console.log(`tempHook: ${tempHook}`)
+        const tempHook = Hooks.on('pf2e.reroll', pf2eRerollHook);
 
         game.pf2e.Check.rerollFromMessage(message, {heroPoint: true}).then(() => {
           Hooks.off('pf2e.reroll', tempHook)
@@ -43,7 +40,6 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
         const messageActor = message.actor;
         const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
         const newValue = actor.heroPoints.value - 2;
-        console.log(`New value of hero point should be: ${newValue}`)
         actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
 
         
