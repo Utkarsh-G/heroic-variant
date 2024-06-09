@@ -95,31 +95,6 @@ function pf2eRerollHook(
   }
 }
 
-// // Code modified from github.com/xdy/xdy-pf2e-workbench
-// function pf2eMonsterRerollHook(
-//   _oldRoll,
-//   newRoll,
-//   heroPoint,
-//   keep, // : "new" | "higher" | "lower",
-// ) {
-//   if (keep !== "new") return;
-
-//   // @ts-ignore
-//   const die = newRoll.dice.find((d) => d instanceof Die && d.number === 1 && d.faces === 20);
-//   const result = die?.results.find((r) => r.active && r.result <= 10);
-//   if (die && result) {
-//       newRoll.terms.push(
-//           // @ts-ignore
-//           OperatorTerm.fromData({ class: "OperatorTerm", operator: "+", evaluated: true }),
-//           // @ts-ignore
-//           NumericTerm.fromData({ class: "NumericTerm", number: 10, evaluated: true }),
-//       );
-//       // @ts-ignore It's protected. Meh.
-//       newRoll._total += 10;
-//       newRoll.options.keeleyAdd10 = true;
-//   }
-// }
-
 // Code modified from github.com/xdy/xdy-pf2e-workbench
 function renderChatMessageHook(message, jq) {
   const html = jq.get(0);
@@ -203,3 +178,32 @@ async function updateUnsettledInjuriesByOneOnSelectedActor(actor){
 async function updateActorsPreviousWound(actor, value){
   await actor.update({"flags.heroicVariant.previousWound": value})
 }
+
+// when an npc token moves, check all npc tokens to add or remove a phalanx bonus
+
+Hooks.on("updateToken", (tokenInfo, change) => {
+  if (tokenInfo.actor.type !== "npc") return;
+  const currentScene = game.scenes.find(scene => scene.active === true);
+  const tokensInScene = currentScene.tokens;
+  const npcTokensOnCanvas = canvas.tokens.objects.children.filter(token => token.actor.type === "npc");
+
+  if (npcTokensOnCanvas.length === 0) return;
+
+  npcTokensOnCanvas.forEach(async token => {
+    let hasAdjacentAlly = false;
+    npcTokensOnCanvas.forEach(token2 => {
+      if (token.distanceTo(token2) === 5) hasAdjacentAlly = true;
+    });
+
+    const phalanxEffect = await fromUuid("Compendium.pf2e-heroic-variant.hv-effects-and-abilities.Item.Epii4QJxe6cFImI1");
+    if (hasAdjacentAlly){
+      const preExistingEffect = token.actor.itemTypes.effect.find((e) => e.name === "Phalanx Bonus");
+      if (!preExistingEffect){await token.actor.createEmbeddedDocuments("Item", [phalanxEffect.toObject()]);}
+    } else {
+      const preExistingEffect = token.actor.itemTypes.effect.find((e) => e.name === "Phalanx Bonus");
+      if (preExistingEffect) {await token.actor.deleteEmbeddedDocuments("Item", [preExistingEffect.id]);}
+    }
+
+  });
+
+})
