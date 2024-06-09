@@ -181,10 +181,23 @@ async function updateActorsPreviousWound(actor, value){
 
 // when an npc token moves, check all npc tokens to add or remove a phalanx bonus
 
-Hooks.on("updateToken", (tokenInfo, change) => {
+Hooks.on("createToken", (tokenInfo) => {
   if (tokenInfo.actor.type !== "npc") return;
-  const currentScene = game.scenes.find(scene => scene.active === true);
-  const tokensInScene = currentScene.tokens;
+  updatePhalanxBonus();
+})
+
+Hooks.on("updateToken", (tokenInfo) => {
+  if (tokenInfo.actor.type !== "npc") return;
+  updatePhalanxBonus();
+})
+
+Hooks.on("deleteToken", (tokenInfo) => {
+  if (tokenInfo.actor.type !== "npc") return;
+  updatePhalanxBonus();
+})
+
+
+function updatePhalanxBonus(){
   const npcTokensOnCanvas = canvas.tokens.objects.children.filter(token => token.actor.type === "npc");
 
   if (npcTokensOnCanvas.length === 0) return;
@@ -205,5 +218,4 @@ Hooks.on("updateToken", (tokenInfo, change) => {
     }
 
   });
-
-})
+}
