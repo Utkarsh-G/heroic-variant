@@ -10,16 +10,42 @@ Hooks.on('init', ()=>{
     _getEntryContextOptions_Wrapper,
     'WRAPPER',
   )
+  game.settings.register(MODULE_ID, 'more-and-better-hero-points', {
+    name: "Enable all the hero point changes from Heroic Variant",
+    hint: "Max Hero Points increases to 5. Players get the options to spend two to reroll with d10+10. GMs can reroll npc rolls by selecting player token, spending two of their hero points.",
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+  })
+  game.settings.register(MODULE_ID, 'unsettled-injuries', {
+    name: "Enable automation of Unsettled Injuries",
+    hint: "Unsettled Injuries automatically increase when wounded value is decreased.",
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+  })
+  game.settings.register(MODULE_ID, 'phalanx-bonus-automation', {
+    name: "Enable automation of Phalanx Bonus for NPCs.",
+    hint: "Whenever any npc token is added, removed, or moved on the canvas, all NPCs are checked for adjacency. Adjacent NPCs get the phalanx bonus.",
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+  })
 })
 
 const canKeelyHeroPointReroll = ($li) => {
-            const message = game.messages.get($li[0].dataset.messageId, { strict: true });
-            const messageActor = message.actor;
-            const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
-            return message.isRerollable && !!actor?.isOfType("character") && actor.heroPoints.value > 1;
-        };
+  if (!game.settings.get(MODULE_ID, 'more-and-better-hero-points')) return false;
+  const message = game.messages.get($li[0].dataset.messageId, { strict: true });
+  const messageActor = message.actor;
+  const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
+  return message.isRerollable && !!actor?.isOfType("character") && actor.heroPoints.value > 1;
+};
 
 const canMisfortuneReroll = ($li) => {
+  if (!game.settings.get(MODULE_ID, 'more-and-better-hero-points')) return false;
   const message = game.messages.get($li[0].dataset.messageId, { strict: true });
   const messageActor = message.actor;
   if (!_token || !_token.actor || !_token.actor.heroPoints) return false;
@@ -138,6 +164,7 @@ function renderChatMessageHook(message, jq) {
 Hooks.on('renderChatMessage', renderChatMessageHook);
 
 Hooks.on('preUpdateItem', async (itemInfo, change) => {
+  if (!game.settings.get(MODULE_ID, 'unsettled-injuries')) return;
   // if wounded
   if (itemInfo._source.name === "Wounded"){
     if (! itemInfo.actor?.flags.heroicVariant?.previousWound){
@@ -155,11 +182,13 @@ Hooks.on('preUpdateItem', async (itemInfo, change) => {
 });
 
 Hooks.on('preDeleteItem', async (itemInfo, options, userID) => {
+  if (!game.settings.get(MODULE_ID, 'unsettled-injuries')) return;
   if(options.hardResetHeroicVariant) return;
   ifWoundedThenUpdate(itemInfo.actor, itemInfo._source.name, 0)
 });
 
 Hooks.on('preCreateItem', async (itemInfo) => {
+  if (!game.settings.get(MODULE_ID, 'unsettled-injuries')) return;
   if(itemInfo._source.name === "Wounded") updateActorsPreviousWound(itemInfo.actor, 1)
 });
 
@@ -182,16 +211,19 @@ async function updateActorsPreviousWound(actor, value){
 // when an npc token moves, check all npc tokens to add or remove a phalanx bonus
 
 Hooks.on("createToken", (tokenInfo) => {
+  if (!game.settings.get(MODULE_ID, 'phalanx-bonus-automation')) return;
   if (tokenInfo.actor.type !== "npc" || !game.users.current.isGM) return;
   updatePhalanxBonus();
 })
 
 Hooks.on("updateToken", (tokenInfo) => {
+  if (!game.settings.get(MODULE_ID, 'phalanx-bonus-automation')) return;
   if (tokenInfo.actor.type !== "npc" || !game.users.current.isGM) return;
   updatePhalanxBonus();
 })
 
 Hooks.on("deleteToken", (tokenInfo) => {
+  if (!game.settings.get(MODULE_ID, 'phalanx-bonus-automation')) return;
   if (tokenInfo.actor.type !== "npc" || !game.users.current.isGM) return;
   updatePhalanxBonus();
 })
