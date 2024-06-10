@@ -57,7 +57,7 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
       icon: '<i class="fas fa-star"></i>',
       condition: canMisfortuneReroll,
       callback:  li => {
-        if (!_token || !_token.actor || !_token.actor.heroPoints){console.log("no selected token"); return;}
+        if (!_token || !_token.actor || !_token.actor.heroPoints){console.log("No selected token for hero point source."); return;}
         if (_token.actor.heroPoints.value > 1) {
           const message = game.messages.get(li[0].dataset.messageId, {strict: true});
           game.pf2e.Check.rerollFromMessage(message, {heroPoint: false, keep: 'new'}).then(() => {})
@@ -182,17 +182,17 @@ async function updateActorsPreviousWound(actor, value){
 // when an npc token moves, check all npc tokens to add or remove a phalanx bonus
 
 Hooks.on("createToken", (tokenInfo) => {
-  if (tokenInfo.actor.type !== "npc") return;
+  if (tokenInfo.actor.type !== "npc" || !game.users.current.isGM) return;
   updatePhalanxBonus();
 })
 
 Hooks.on("updateToken", (tokenInfo) => {
-  if (tokenInfo.actor.type !== "npc") return;
+  if (tokenInfo.actor.type !== "npc" || !game.users.current.isGM) return;
   updatePhalanxBonus();
 })
 
 Hooks.on("deleteToken", (tokenInfo) => {
-  if (tokenInfo.actor.type !== "npc") return;
+  if (tokenInfo.actor.type !== "npc" || !game.users.current.isGM) return;
   updatePhalanxBonus();
 })
 
