@@ -10,9 +10,17 @@ Hooks.on('init', ()=>{
     _getEntryContextOptions_Wrapper,
     'WRAPPER',
   )
-  game.settings.register(MODULE_ID, 'more-and-better-hero-points', {
-    name: "Enable all the hero point changes from Heroic Variant",
-    hint: "Max Hero Points increases to 5. Players get the options to spend two to reroll with d10+10. GMs can reroll npc rolls by selecting player token, spending two of their hero points.",
+  game.settings.register(MODULE_ID, 'more-hero-points', {
+    name: "Increase hero points in all character sheets to 5.",
+    hint: "Max Hero Points increases to 5.",
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+  })
+  game.settings.register(MODULE_ID, 'better-hero-points', {
+    name: "Enable additional hero point options from Heroic Variant",
+    hint: "Players get the options to spend two to reroll with d10+10. GMs can reroll npc rolls by selecting player token, spending two of their hero points.",
     scope: 'world',
     config: true,
     type: Boolean,
@@ -36,8 +44,25 @@ Hooks.on('init', ()=>{
   })
 })
 
+Hooks.once('ready', async ()=>{
+  if (game.settings.get(MODULE_ID, 'more-hero-points')){
+    const macroId = await fromUuid("Compendium.pf2e-heroic-variant.heroic-variant-macros.Macro.vGMOmkgKTzbgGEqA")
+    macroId.execute()
+  } else {
+    const macroId = await fromUuid("Compendium.pf2e-heroic-variant.heroic-variant-macros.Macro.5XL3VXhcinVSQTsa")
+    macroId.execute()
+  }
+})
+
+Hooks.on('createActor', async (actor)=>{
+  if (game.settings.get(MODULE_ID, 'more-hero-points')){
+    const macroId = await fromUuid("Compendium.pf2e-heroic-variant.heroic-variant-macros.Macro.cv1VZWwnu1kczsx8")
+    macroId.execute({"actor":actor})
+  } 
+})
+
 const canKeelyHeroPointReroll = ($li) => {
-  if (!game.settings.get(MODULE_ID, 'more-and-better-hero-points')) return false;
+  if (!game.settings.get(MODULE_ID, 'better-hero-points')) return false;
   const message = game.messages.get($li[0].dataset.messageId, { strict: true });
   const messageActor = message.actor;
   const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
@@ -45,7 +70,7 @@ const canKeelyHeroPointReroll = ($li) => {
 };
 
 const canMisfortuneReroll = ($li) => {
-  if (!game.settings.get(MODULE_ID, 'more-and-better-hero-points')) return false;
+  if (!game.settings.get(MODULE_ID, 'better-hero-points')) return false;
   const message = game.messages.get($li[0].dataset.messageId, { strict: true });
   const messageActor = message.actor;
   if (!_token || !_token.actor || !_token.actor.heroPoints) return false;
