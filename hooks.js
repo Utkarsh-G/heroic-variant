@@ -89,17 +89,18 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
       condition: canKeelyHeroPointReroll,
       callback:  li => {
         const message = game.messages.get(li[0].dataset.messageId, {strict: true});
-        const messageActor = message.actor;
-        const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
+
         const tempHook = Hooks.on('pf2e.reroll', pf2eRerollHook);
 
         game.pf2e.Check.rerollFromMessage(message, {heroPoint: true}).then(() => {
-          Hooks.off('pf2e.reroll', tempHook);
+          Hooks.off('pf2e.reroll', tempHook)
         })
-
+        const messageActor = message.actor;
+        const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
         const newValue = actor.heroPoints.value - 2;
         actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
 
+        
       },
     },
     {
@@ -110,61 +111,15 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
         if (!_token || !_token.actor || !_token.actor.heroPoints){console.log("No selected token for hero point source."); return;}
         if (_token.actor.heroPoints.value > 1) {
           const message = game.messages.get(li[0].dataset.messageId, {strict: true});
-          game.pf2e.Check.rerollFromMessage(message, {heroPoint: false, keep: 'new'}).then(() => {
-          })
+          game.pf2e.Check.rerollFromMessage(message, {heroPoint: false, keep: 'new'}).then(() => {})
           const newValue = _token.actor.heroPoints.value - 2;
-          _token.actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp would still be nice.
+          _token.actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
         }
       },
     }
   )
   return buttons
 }
-
-// Modified from github.com/xdy/xdy-pf2e-workbench
-function pf2eRerollHookWithUnsettledInjuries(
-  _oldRoll,
-  newRoll,
-  heroPoint,
-  keep, // : "new" | "higher" | "lower",
-) {
-  if (keep !== "new" || !_token || !_token.actor) return;
-  const hasUnsettledInjuries = !!_token.actor.itemTypes.effect.find(effect => effect.name === "Unsettled Injuries");
-
-  // @ts-ignore
-  if (hasUnsettledInjuries && heroPoint){
-    const die = newRoll.dice.find((d) => d instanceof Die && d.number === 1 && d.faces === 20);
-    if (die) {
-      newRoll.terms.push(
-          // @ts-ignore
-          OperatorTerm.fromData({ class: "OperatorTerm", operator: "+", evaluated: true }),
-          // @ts-ignore
-          NumericTerm.fromData({ class: "NumericTerm", number: 1, evaluated: true }),
-      );
-      // @ts-ignore It's protected. Meh.
-      newRoll._total += 1;
-      newRoll.options.hasUnsettledInjuries = true;
-    }
-  }
-
-  if (hasUnsettledInjuries && !heroPoint){
-    const die = newRoll.dice.find((d) => d instanceof Die && d.number === 1 && d.faces === 20);
-    if (die) {
-      newRoll.terms.push(
-          // @ts-ignore
-          OperatorTerm.fromData({ class: "OperatorTerm", operator: "-", evaluated: true }),
-          // @ts-ignore
-          NumericTerm.fromData({ class: "NumericTerm", number: 1, evaluated: true }),
-      );
-      // @ts-ignore It's protected. Meh.
-      newRoll._total -= 1;
-      newRoll.options.enemyHasUnsettledInjuries = true;
-    }
-  }
-
-}
-
-Hooks.on("pf2e.reroll", pf2eRerollHookWithUnsettledInjuries);
 
 // Code copied from github.com/xdy/xdy-pf2e-workbench
 function pf2eRerollHook(
@@ -192,7 +147,6 @@ function pf2eRerollHook(
 }
 
 // Code modified from github.com/xdy/xdy-pf2e-workbench
-// massive repetition
 function renderChatMessageHook(message, jq) {
   const html = jq.get(0);
 
@@ -221,74 +175,6 @@ function renderChatMessageHook(message, jq) {
             const span = document.createElement("span");
             span.className = "keeley-add-10";
             span.innerText = " + 10";
-            formulaElem?.append(span);
-            formulaElem.style.color = "darkblue";
-
-            // Make the total purple
-            newTotalElem.classList.add("keeley-add-10");
-            newTotalElem.style.color = "darkblue";
-        }
-    }
-  }
-
-  if (lastRoll?.options.hasUnsettledInjuries) {
-    const element = jq.get(0);
-
-    if (element) {
-        const tags = element.querySelector(".flavor-text > .tags.modifiers");
-        const formulaElem = element.querySelector(".reroll-discard .dice-formula");
-        const newTotalElem = element.querySelector(".reroll-second .dice-total");
-        if (tags && formulaElem && newTotalElem) {
-            // Add a tag to the list of modifiers
-            const newTag = document.createElement("span");
-            newTag.classList.add("tag", "tag_transparent", "keeley-add-10");
-            newTag.innerText = 'Unsettled Injuries Reroll +1';
-            newTag.dataset.slug = "keeley-add-10";
-            newTag.style.color = "darkblue";
-            const querySelector = tags.querySelector(".tag");
-            if (querySelector?.dataset.visibility === "gm") {
-                newTag.dataset.visibility = "gm";
-            }
-            tags.append(newTag);
-
-            // Show +10 in the formula
-            const span = document.createElement("span");
-            span.className = "keeley-add-10";
-            span.innerText = " + 1";
-            formulaElem?.append(span);
-            formulaElem.style.color = "darkblue";
-
-            // Make the total purple
-            newTotalElem.classList.add("keeley-add-10");
-            newTotalElem.style.color = "darkblue";
-        }
-    }
-  }
-
-  if (lastRoll?.options.enemyHasUnsettledInjuries) {
-    const element = jq.get(0);
-
-    if (element) {
-        const tags = element.querySelector(".flavor-text > .tags.modifiers");
-        const formulaElem = element.querySelector(".reroll-discard .dice-formula");
-        const newTotalElem = element.querySelector(".reroll-second .dice-total");
-        if (tags && formulaElem && newTotalElem) {
-            // Add a tag to the list of modifiers
-            const newTag = document.createElement("span");
-            newTag.classList.add("tag", "tag_transparent", "keeley-add-10");
-            newTag.innerText = 'Unsettled Injuries Reroll -1';
-            newTag.dataset.slug = "keeley-add-10";
-            newTag.style.color = "darkblue";
-            const querySelector = tags.querySelector(".tag");
-            if (querySelector?.dataset.visibility === "gm") {
-                newTag.dataset.visibility = "gm";
-            }
-            tags.append(newTag);
-
-            // Show +10 in the formula
-            const span = document.createElement("span");
-            span.className = "keeley-add-10";
-            span.innerText = " - 1";
             formulaElem?.append(span);
             formulaElem.style.color = "darkblue";
 
@@ -340,12 +226,28 @@ async function ifWoundedThenUpdate(actor, itemName, prevWoundedValue){
 
 async function updateUnsettledInjuriesByOneOnSelectedActor(actor){
   const macroId = await fromUuid("Compendium.pf2e-heroic-variant.heroic-variant-macros.Macro.UGMhMZNNyn8RU5t3")
-  macroId.execute({"actorIn":actor})
+  macroId.execute({"actor":actor})
 }
 
 async function updateActorsPreviousWound(actor, value){
   await actor.update({"flags.heroicVariant.previousWound": value})
 }
+
+Hooks.on('createCombatant', (combatant) => {
+  if (combatant.actor.type !== "character" || !game.users.current.isGM) return;
+  addTempHPifUnsettled(combatant.actor)
+})
+
+async function addTempHPifUnsettled(actor){
+  const unsettledInjuries = actor.itemTypes.effect.find(effect => effect.name === "Unsettled Injuries");
+  if (typeof unsettledInjuries === 'undefined') return;
+  const desperation = (unsettledInjuries.system.badge.value === unsettledInjuries.system.badge.max) && !!actor.itemTypes.condition.find(condition => condition.sourceId === "Compendium.pf2e.conditionitems.Item.Yl48xTdMh3aeQYL2");
+  const currentTHP = actor.system.attributes.hp.temp;
+  const thp = desperation ? Math.max(actor.level, 2) : Math.max(Math.floor(actor.level / 2),1);
+  console.log(`Actor ${actor.name} has unsettled injuries and will get ${thp} thp if it is greater than ${currentTHP}. Is desperate: ${desperation}`)
+  if(thp > currentTHP) actor.update({"system.attributes.hp.temp": thp});
+}
+
 
 // when an npc token moves, check all npc tokens to add or remove a phalanx bonus
 
