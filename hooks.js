@@ -245,7 +245,11 @@ async function addTempHPifUnsettled(actor){
   const currentTHP = actor.system.attributes.hp.temp;
   const thp = desperation ? Math.max(actor.level, 2) : Math.max(Math.floor(actor.level / 2),1);
   console.log(`Actor ${actor.name} has unsettled injuries and will get ${thp} thp if it is greater than ${currentTHP}. Is desperate: ${desperation}`)
-  if(thp > currentTHP) actor.update({"system.attributes.hp.temp": thp});
+  if(thp > currentTHP) {
+    const chatMessage = `<body><p> ${actor.name} was added to combat with ${thp} Temporary Hit Points due to Unsettled Injuries.</p></body>`
+    await ChatMessage.create({speaker: ChatMessage.getSpeaker({ actor }), content: chatMessage})
+    actor.update({"system.attributes.hp.temp": thp})
+  };
 }
 
 
