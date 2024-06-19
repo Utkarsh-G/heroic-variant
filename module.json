@@ -6,6 +6,9 @@
     "minimum": "11",
     "verified": "11"
   },
+  "url": "https://github.com/Utkarsh-G/heroic-variant",
+  "manifest": "https://raw.githubusercontent.com/Utkarsh-G/heroic-variant/master/module.json",
+  "download": "https://github.com/Utkarsh-G/heroic-variant/archive/refs/heads/main.zip",
   "packs": [
     {
       "name": "heroic-variant-macros",

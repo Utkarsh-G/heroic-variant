@@ -1,0 +1,16 @@
+Unsettled Injuries
+    When wounded is reduced, add Unsettled Injuries to character sheet. 
+    Correct Max Limit for UIs.
+    When wounded is removed while max Unsettled Injuries, wounded is return. 
+    THP is granted correctly for both cases of unsettled injuries.
+    Reset macro works.
+
+    All functionality is disabled correctly when menu is off. 
+
+Phalanx Bonus
+    Bonus correctly added / removed on all and only npcs when tokens are created, moved, and deleted.
+
+Hero Points
+    Existing heros have 5 hero points. New heros have 5 hero points.
+    Players can reroll with 2 hp for keely bonus. Hero Points correctly deducted.
+    GM can reroll for players for rolling misfoture on NPCs. Hero Points correctly deducted.
