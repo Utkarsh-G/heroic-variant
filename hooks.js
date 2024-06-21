@@ -11,15 +11,15 @@ Hooks.on('init', ()=>{
     'WRAPPER',
   )
   game.settings.register(MODULE_ID, 'more-hero-points', {
-    name: "Increase hero points in all character sheets to 5.",
-    hint: "Max Hero Points increases to 5.",
+    name: "Increase max hero points to 5 (requires reload)",
+    hint: "Max Hero Points increases to 5 for all existing and new actors with a player character sheet.",
     scope: 'world',
     config: true,
     type: Boolean,
     default: true,
   })
   game.settings.register(MODULE_ID, 'better-hero-points', {
-    name: "Enable additional hero point options from Heroic Variant",
+    name: "Enable additional hero point usage",
     hint: "Players get the options to spend two to reroll with d10+10. GMs can reroll npc rolls by selecting player token, spending two of their hero points.",
     scope: 'world',
     config: true,
@@ -27,15 +27,23 @@ Hooks.on('init', ()=>{
     default: true,
   })
   game.settings.register(MODULE_ID, 'unsettled-injuries', {
-    name: "Enable automation of Unsettled Injuries",
-    hint: "Unsettled Injuries automatically increase when wounded value is decreased.",
+    name: "Automate granting Unsettled Injuries",
+    hint: "Unsettled Injuries automatically increase when wounded value is decreased. Wounded cannot be decreased while at max Unsettled Injuries.",
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+  })
+  game.settings.register(MODULE_ID, 'unsettled-injuries-thp', {
+    name: "Enable temporary hit points with Unsettled Injuries",
+    hint: "If the actor has any unsettled injuries, they get THP equal to half their level when rolling initiative. If they have max unsettled unjuries and the wounded condition, the THP is equal to their level.",
     scope: 'world',
     config: true,
     type: Boolean,
     default: true,
   })
   game.settings.register(MODULE_ID, 'phalanx-bonus-automation', {
-    name: "Enable automation of Phalanx Bonus for NPCs.",
+    name: "Automate Phalanx Bonus for NPCs.",
     hint: "Whenever any npc token is added, removed, or moved on the canvas, all NPCs are checked for adjacency. Adjacent NPCs get the phalanx bonus.",
     scope: 'world',
     config: true,
@@ -233,7 +241,9 @@ async function updateActorsPreviousWound(actor, value){
   await actor.update({"flags.heroicVariant.previousWound": value})
 }
 
+// adding THP on initiative when unsettled injuries exist.
 Hooks.on('createCombatant', (combatant) => {
+  if (!game.settings.get(MODULE_ID, 'unsettled-injuries-thp')) return;
   if (combatant.actor.type !== "character" || !game.users.current.isGM) return;
   addTempHPifUnsettled(combatant.actor)
 })

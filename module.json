@@ -31,6 +31,17 @@
         "PLAYER": "OBSERVER",
         "ASSISTANT": "OWNER"
       }
+    },
+    {
+      "name": "hv-notes",
+      "label": "HV Notes",
+      "path": "packs/hv-notes",
+      "type": "JournalEntry",
+      "system": "pf2e",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
     }
   ],
   "packFolders": [
@@ -39,7 +50,8 @@
       "sorting": "a",
       "packs": [
         "hv-effects-and-abilities",
-        "heroic-variant-macros"
+        "heroic-variant-macros",
+        "hv-notes"
       ],
       "folders": []
     }
