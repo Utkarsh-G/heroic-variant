@@ -26,6 +26,14 @@ Hooks.on('init', ()=>{
     type: Boolean,
     default: true,
   })
+  game.settings.register(MODULE_ID, 'easy-hero-points', {
+    name: "Grant hero point from chat",
+    hint: "GM can right click any chat message owned by a PC and grant them a Hero Point from the menu. Option only appears if the PC has fewer than maximum hero points.",
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+  })
   game.settings.register(MODULE_ID, 'raw-scars', {
     name: "Automate granting Raw Scars",
     hint: "Raw Scars automatically increase when wounded value is decreased. Wounded cannot be decreased while at max Raw Scars.",
@@ -77,6 +85,13 @@ const canMisfortuneReroll = ($li) => {
   return message.isRerollable && !messageActor?.isOfType("character") && _token.actor.heroPoints.value > 1;
 };
 
+const canEarnHeroPoint = ($li) => {
+  if (!game.settings.get(MODULE_ID, 'easy-hero-points')) return false;
+  const message = game.messages.get($li[0].dataset.messageId, { strict: true });
+  const messageActor = message.actor;
+  return game.user.isGM && messageActor?.isOfType("character") && messageActor.heroPoints.value < messageActor.heroPoints.max;
+};
+
 const _getEntryContextOptions_Wrapper = (wrapped) => {
   const buttons = wrapped.bind(this)()
   const defaultHeroPointIndex = buttons.findIndex((button) => 
@@ -99,7 +114,6 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
         const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
         const newValue = actor.heroPoints.value - 2;
         actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
-
         
       },
     },
@@ -115,6 +129,22 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
           const newValue = _token.actor.heroPoints.value - 2;
           _token.actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
         }
+      },
+    },
+    {
+      name: 'Grant actor a Hero Point',
+      icon: '<i class="fas fa-star"></i>',
+      condition: canEarnHeroPoint,
+      callback:  li => {
+        const message = game.messages.get(li[0].dataset.messageId, {strict: true});
+        if (!message.actor) return;
+        const messageActor = message.actor;
+        const newValue = messageActor.heroPoints.value + 1;
+        messageActor.update({'system.resources.heroPoints.value': newValue}).then(()=> {
+          const chatMessage = `<body><p>Granted Hero Point to ${message.actor.name}. Increased from ${messageActor.heroPoints.value-1} to ${messageActor.heroPoints.value}.</p></body>`
+          ChatMessage.create({speaker: ChatMessage.getSpeaker({ messageActor }), content: chatMessage})
+        });
+      
       },
     }
   )
