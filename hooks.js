@@ -267,25 +267,25 @@ async function addTempHPifUnsettled(actor){
 
 Hooks.on("createToken", (tokenInfo) => {
   if (!game.settings.get(MODULE_ID, 'phalanx-bonus-automation')) return;
-  if (tokenInfo.actor.type !== "npc" || !game.users.current.isGM) return;
+  if (tokenInfo.actor?.type !== "npc" || !game.users.current.isGM) return;
   updatePhalanxBonus();
 })
 
 Hooks.on("updateToken", (tokenInfo) => {
   if (!game.settings.get(MODULE_ID, 'phalanx-bonus-automation')) return;
-  if (tokenInfo.actor.type !== "npc" || !game.users.current.isGM) return;
+  if (tokenInfo.actor?.type !== "npc" || !game.users.current.isGM) return;
   updatePhalanxBonus();
 })
 
 Hooks.on("deleteToken", (tokenInfo) => {
   if (!game.settings.get(MODULE_ID, 'phalanx-bonus-automation')) return;
-  if (tokenInfo.actor.type !== "npc" || !game.users.current.isGM) return;
+  if (tokenInfo.actor?.type !== "npc" || !game.users.current.isGM) return;
   updatePhalanxBonus();
 })
 
 
 function updatePhalanxBonus(){
-  const npcTokensOnCanvas = canvas.tokens.objects.children.filter(token => token.actor.type === "npc");
+  const npcTokensOnCanvas = canvas.tokens.objects.children.filter(token => token.actor?.type === "npc");
 
   if (npcTokensOnCanvas.length === 0) return;
 
