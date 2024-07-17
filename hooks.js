@@ -26,17 +26,9 @@ Hooks.on('init', ()=>{
     type: Boolean,
     default: true,
   })
-  game.settings.register(MODULE_ID, 'unsettled-injuries', {
-    name: "Automate granting Unsettled Injuries",
-    hint: "Unsettled Injuries automatically increase when wounded value is decreased. Wounded cannot be decreased while at max Unsettled Injuries.",
-    scope: 'world',
-    config: true,
-    type: Boolean,
-    default: true,
-  })
-  game.settings.register(MODULE_ID, 'unsettled-injuries-thp', {
-    name: "Enable temporary hit points with Unsettled Injuries",
-    hint: "If the actor has any unsettled injuries, they get THP equal to half their level when rolling initiative. If they have max unsettled unjuries and the wounded condition, the THP is equal to their level.",
+  game.settings.register(MODULE_ID, 'raw-scars', {
+    name: "Automate granting Raw Scars",
+    hint: "Raw Scars automatically increase when wounded value is decreased. Wounded cannot be decreased while at max Raw Scars.",
     scope: 'world',
     config: true,
     type: Boolean,
@@ -197,7 +189,7 @@ function renderChatMessageHook(message, jq) {
 Hooks.on('renderChatMessage', renderChatMessageHook);
 
 Hooks.on('preUpdateItem', async (itemInfo, change) => {
-  if (!game.settings.get(MODULE_ID, 'unsettled-injuries')) return;
+  if (!game.settings.get(MODULE_ID, 'raw-scars')) return;
   // if wounded
   if (itemInfo._source.name === "Wounded"){
     if (! itemInfo.actor?.flags.heroicVariant?.previousWound){
@@ -207,7 +199,7 @@ Hooks.on('preUpdateItem', async (itemInfo, change) => {
     let incomingValue = change.system.value.value
 
     if (itemInfo.actor.flags.heroicVariant.previousWound > incomingValue){
-      updateUnsettledInjuriesByOneOnSelectedActor(itemInfo.actor)
+      updateRawScarsByOneOnSelectedActor(itemInfo.actor)
     }
     updateActorsPreviousWound(itemInfo.actor, incomingValue)
   }
@@ -215,24 +207,24 @@ Hooks.on('preUpdateItem', async (itemInfo, change) => {
 });
 
 Hooks.on('preDeleteItem', async (itemInfo, options, userID) => {
-  if (!game.settings.get(MODULE_ID, 'unsettled-injuries')) return;
+  if (!game.settings.get(MODULE_ID, 'raw-scars')) return;
   if(options.hardResetHeroicVariant) return;
   ifWoundedThenUpdate(itemInfo.actor, itemInfo._source.name, 0)
 });
 
 Hooks.on('preCreateItem', async (itemInfo) => {
-  if (!game.settings.get(MODULE_ID, 'unsettled-injuries')) return;
+  if (!game.settings.get(MODULE_ID, 'raw-scars')) return;
   if(itemInfo._source.name === "Wounded") updateActorsPreviousWound(itemInfo.actor, 1)
 });
 
 async function ifWoundedThenUpdate(actor, itemName, prevWoundedValue){
   if (itemName === "Wounded"){
-    updateUnsettledInjuriesByOneOnSelectedActor(actor)
+    updateRawScarsByOneOnSelectedActor(actor)
     updateActorsPreviousWound(actor, prevWoundedValue)
   }
 }
 
-async function updateUnsettledInjuriesByOneOnSelectedActor(actor){
+async function updateRawScarsByOneOnSelectedActor(actor){
   const macroId = await fromUuid("Compendium.pf2e-heroic-variant.heroic-variant-macros.Macro.UGMhMZNNyn8RU5t3")
   macroId.execute({"actor":actor})
 }
@@ -240,28 +232,6 @@ async function updateUnsettledInjuriesByOneOnSelectedActor(actor){
 async function updateActorsPreviousWound(actor, value){
   await actor.update({"flags.heroicVariant.previousWound": value})
 }
-
-// adding THP on initiative when unsettled injuries exist.
-Hooks.on('createCombatant', (combatant) => {
-  if (!game.settings.get(MODULE_ID, 'unsettled-injuries-thp')) return;
-  if (combatant.actor.type !== "character" || !game.users.current.isGM) return;
-  addTempHPifUnsettled(combatant.actor)
-})
-
-async function addTempHPifUnsettled(actor){
-  const unsettledInjuries = actor.itemTypes.effect.find(effect => effect.name === "Unsettled Injuries");
-  if (typeof unsettledInjuries === 'undefined') return;
-  const desperation = (unsettledInjuries.system.badge.value === unsettledInjuries.system.badge.max) && !!actor.itemTypes.condition.find(condition => condition.sourceId === "Compendium.pf2e.conditionitems.Item.Yl48xTdMh3aeQYL2");
-  const currentTHP = actor.system.attributes.hp.temp;
-  const thp = desperation ? Math.max(actor.level, 2) : Math.max(Math.floor(actor.level / 2),1);
-  console.log(`Actor ${actor.name} has unsettled injuries and will get ${thp} thp if it is greater than ${currentTHP}. Is desperate: ${desperation}`)
-  if(thp > currentTHP) {
-    const chatMessage = `<body><p> ${actor.name} was added to combat with ${thp} Temporary Hit Points due to Unsettled Injuries.</p></body>`
-    await ChatMessage.create({speaker: ChatMessage.getSpeaker({ actor }), content: chatMessage})
-    actor.update({"system.attributes.hp.temp": thp})
-  };
-}
-
 
 // when an npc token moves, check all npc tokens to add or remove a phalanx bonus
 
@@ -297,10 +267,10 @@ function updatePhalanxBonus(){
 
     const phalanxEffect = await fromUuid("Compendium.pf2e-heroic-variant.hv-effects-and-abilities.Item.Epii4QJxe6cFImI1");
     if (hasAdjacentAlly){
-      const preExistingEffect = token.actor.itemTypes.effect.find((e) => e.name === "Phalanx Bonus");
+      const preExistingEffect = token.actor.itemTypes.effect.find((e) => e.slug === "hv-phalanx-bonus");
       if (!preExistingEffect){await token.actor.createEmbeddedDocuments("Item", [phalanxEffect.toObject()]);}
     } else {
-      const preExistingEffect = token.actor.itemTypes.effect.find((e) => e.name === "Phalanx Bonus");
+      const preExistingEffect = token.actor.itemTypes.effect.find((e) => e.slug === "hv-phalanx-bonus");
       if (preExistingEffect) {await token.actor.deleteEmbeddedDocuments("Item", [preExistingEffect.id]);}
     }
 
