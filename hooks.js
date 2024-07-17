@@ -162,7 +162,7 @@ function renderChatMessageHook(message, jq) {
             // Add a tag to the list of modifiers
             const newTag = document.createElement("span");
             newTag.classList.add("tag", "tag_transparent", "keeley-add-10");
-            newTag.innerText = 'Rolled Under 10 +10';
+            newTag.innerText = 'Rolled Under 11 +10';
             newTag.dataset.slug = "keeley-add-10";
             newTag.style.color = "darkblue";
             const querySelector = tags.querySelector(".tag");
@@ -260,6 +260,7 @@ function updatePhalanxBonus(){
   if (npcTokensOnCanvas.length === 0) return;
 
   npcTokensOnCanvas.forEach(async token => {
+    if (!token.actor) return;
     let hasAdjacentAlly = false;
     npcTokensOnCanvas.forEach(token2 => {
       if (token.distanceTo(token2) === 5) hasAdjacentAlly = true;
