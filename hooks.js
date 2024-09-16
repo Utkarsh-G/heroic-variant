@@ -221,7 +221,8 @@ Hooks.on('renderChatMessage', renderChatMessageHook);
 Hooks.on('preUpdateItem', async (itemInfo, change) => {
   if (!game.settings.get(MODULE_ID, 'raw-scars')) return;
   // if wounded
-  if (itemInfo._source.name === "Wounded"){
+  if (itemInfo.system.slug === "wounded"){
+    console.log(itemInfo);
     if (! itemInfo.actor?.flags.heroicVariant?.previousWound){
       await itemInfo.actor.update({"flags.heroicVariant.previousWound": 0})
     }
@@ -239,16 +240,16 @@ Hooks.on('preUpdateItem', async (itemInfo, change) => {
 Hooks.on('preDeleteItem', async (itemInfo, options, userID) => {
   if (!game.settings.get(MODULE_ID, 'raw-scars')) return;
   if(options.hardResetHeroicVariant) return;
-  ifWoundedThenUpdate(itemInfo.actor, itemInfo._source.name, 0)
+  ifWoundedThenUpdate(itemInfo.actor, itemInfo.system.slug, 0)
 });
 
 Hooks.on('preCreateItem', async (itemInfo) => {
   if (!game.settings.get(MODULE_ID, 'raw-scars')) return;
-  if(itemInfo._source.name === "Wounded") updateActorsPreviousWound(itemInfo.actor, 1)
+  if(itemInfo.system.slug === "wounded") updateActorsPreviousWound(itemInfo.actor, 1)
 });
 
-async function ifWoundedThenUpdate(actor, itemName, prevWoundedValue){
-  if (itemName === "Wounded"){
+async function ifWoundedThenUpdate(actor, itemSlug, prevWoundedValue){
+  if (itemSlug === "wounded"){
     updateRawScarsByOneOnSelectedActor(actor)
     updateActorsPreviousWound(actor, prevWoundedValue)
   }
