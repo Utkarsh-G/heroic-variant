@@ -286,7 +286,11 @@ Hooks.on("deleteToken", (tokenInfo) => {
 
 
 function updatePhalanxBonus(){
-  const npcTokensOnCanvas = canvas.tokens.objects.children.filter(token => token.actor?.type === "npc");
+  const npcTokensOnCanvas = canvas.tokens.objects.children.filter(token => {
+    const isNPC = token.actor?.type === "npc";
+    const doesNotHavePhalanxImmunity = !token.actor?.itemTypes.effect.find((e) => e.slug === "hv-phalanx-immunity");
+    return (isNPC && doesNotHavePhalanxImmunity);
+  });
 
   if (npcTokensOnCanvas.length === 0) return;
 
