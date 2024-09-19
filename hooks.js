@@ -222,7 +222,6 @@ Hooks.on('preUpdateItem', async (itemInfo, change) => {
   if (!game.settings.get(MODULE_ID, 'raw-scars')) return;
   // if wounded
   if (itemInfo.system.slug === "wounded"){
-    console.log(itemInfo);
     if (! itemInfo.actor?.flags.heroicVariant?.previousWound){
       await itemInfo.actor.update({"flags.heroicVariant.previousWound": 0})
     }
