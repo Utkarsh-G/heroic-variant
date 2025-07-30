@@ -1,10 +1,10 @@
 {
   "id": "pf2e-heroic-variant",
   "title": "PF2e Heroic Variant",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "compatibility": {
     "minimum": "12",
-    "verified": "12"
+    "verified": "13"
   },
   "url": "https://github.com/Utkarsh-G/heroic-variant",
   "manifest": "https://raw.githubusercontent.com/Utkarsh-G/heroic-variant/master/module.json",
