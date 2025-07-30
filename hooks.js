@@ -177,12 +177,11 @@ function pf2eRerollHook(
 }
 
 // Code modified from github.com/xdy/xdy-pf2e-workbench
-function renderChatMessageHook(message, jq) {
-  const html = jq.get(0);
+function renderChatMessageHook(message, html) {
 
   const lastRoll = message.rolls.at(-1);
   if (lastRoll?.options.keeleyAdd10) {
-    const element = jq.get(0);
+    const element = html;
 
     if (element) {
         const tags = element.querySelector(".flavor-text > .tags.modifiers");
@@ -216,7 +215,7 @@ function renderChatMessageHook(message, jq) {
   }
 }
 
-Hooks.on('renderChatMessage', renderChatMessageHook);
+Hooks.on('renderChatMessageHTML', renderChatMessageHook);
 
 Hooks.on('preUpdateItem', async (itemInfo, change) => {
   if (!game.settings.get(MODULE_ID, 'raw-scars')) return;
