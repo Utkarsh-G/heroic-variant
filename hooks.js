@@ -6,7 +6,7 @@ const MODULE_ID = 'pf2e-heroic-variant'
 Hooks.on('init', ()=>{
   libWrapper.register(
     MODULE_ID,
-    'ChatLog.prototype._getEntryContextOptions',
+    'foundry.applications.sidebar.tabs.ChatLog.prototype._getEntryContextOptions',
     _getEntryContextOptions_Wrapper,
     'WRAPPER',
   )
@@ -71,7 +71,7 @@ Hooks.on('createActor', async (actor)=>{
 
 const canKeelyHeroPointReroll = ($li) => {
   if (!game.settings.get(MODULE_ID, 'better-hero-points')) return false;
-  const message = game.messages.get($li[0].dataset.messageId, { strict: true });
+  const message = game.messages.get($li.dataset.messageId, { strict: true });
   const messageActor = message.actor;
   const actor = messageActor?.isOfType("familiar") ? messageActor.master : messageActor;
   return message.isRerollable && !!actor?.isOfType("character") && actor.heroPoints.value > 1;
@@ -79,7 +79,7 @@ const canKeelyHeroPointReroll = ($li) => {
 
 const canMisfortuneReroll = ($li) => {
   if (!game.settings.get(MODULE_ID, 'better-hero-points')) return false;
-  const message = game.messages.get($li[0].dataset.messageId, { strict: true });
+  const message = game.messages.get($li.dataset.messageId, { strict: true });
   const messageActor = message.actor;
   if (!_token || !_token.actor || !_token.actor.heroPoints) return false;
   return message.isRerollable && !messageActor?.isOfType("character") && _token.actor.heroPoints.value > 1;
@@ -87,7 +87,7 @@ const canMisfortuneReroll = ($li) => {
 
 const canEarnHeroPoint = ($li) => {
   if (!game.settings.get(MODULE_ID, 'easy-hero-points')) return false;
-  const message = game.messages.get($li[0].dataset.messageId, { strict: true });
+  const message = game.messages.get($li.dataset.messageId, { strict: true });
   const messageActor = message.actor;
   return game.user.isGM && messageActor?.isOfType("character") && messageActor.heroPoints.value < messageActor.heroPoints.max;
 };
@@ -103,7 +103,7 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
       icon: '<i class="fas fa-star"></i>',
       condition: canKeelyHeroPointReroll,
       callback:  li => {
-        const message = game.messages.get(li[0].dataset.messageId, {strict: true});
+        const message = game.messages.get(li.dataset.messageId, {strict: true});
 
         const tempHook = Hooks.on('pf2e.reroll', pf2eRerollHook);
 
@@ -124,7 +124,7 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
       callback:  li => {
         if (!_token || !_token.actor || !_token.actor.heroPoints){console.log("No selected token for hero point source."); return;}
         if (_token.actor.heroPoints.value > 1) {
-          const message = game.messages.get(li[0].dataset.messageId, {strict: true});
+          const message = game.messages.get(li.dataset.messageId, {strict: true});
           game.pf2e.Check.rerollFromMessage(message, {heroPoint: false, keep: 'new'}).then(() => {})
           const newValue = _token.actor.heroPoints.value - 2;
           _token.actor.update({'system.resources.heroPoints.value': newValue}).then() // clamp to min 0? handle returned promise?
@@ -136,7 +136,7 @@ const _getEntryContextOptions_Wrapper = (wrapped) => {
       icon: '<i class="fas fa-star"></i>',
       condition: canEarnHeroPoint,
       callback:  li => {
-        const message = game.messages.get(li[0].dataset.messageId, {strict: true});
+        const message = game.messages.get(li.dataset.messageId, {strict: true});
         if (!message.actor) return;
         const messageActor = message.actor;
         const newValue = messageActor.heroPoints.value + 1;
